@@ -19,6 +19,13 @@ $(TARGET): $(FLEX_OUTPUT)
 $(FLEX_OUTPUT): $(FLEX_INPUT)
 	$(FLEX) -o $(FLEX_OUTPUT) $(FLEX_INPUT)
 
+# Debugging target
+debug: $(FLEX_INPUT)
+	$(FLEX) -d -o $(FLEX_OUTPUT) $(FLEX_INPUT)
+	$(CC) $(FLEX_OUTPUT) -o $(TARGET) $(CFLAGS)
+	@echo "Debugging build complete. Run ./$(TARGET) to test with verbose output."
+
+
 # Clean up generated files
 clean:
 	rm -f $(FLEX_OUTPUT) $(TARGET)

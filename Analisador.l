@@ -1,4 +1,3 @@
-%x ON_STATE
 %x FLYING_STATE
 %x LANDED_STATE
 
@@ -37,6 +36,8 @@ void calculate_position(int distance) {
 
 // Função auxiliar para imprimir o estado atual
 void print_state_error() {
+
+    printf("Comando não reconhecido: %s\n", yytext);
     if (is_powered == 0) {
         printf("ERRO: Comando inválido. A nave está desligada.\n");
     } else if (can_fly == 0 && current_z == 0) {
@@ -60,10 +61,10 @@ void print_state_error() {
         is_powered = 1;
         printf("acao(ligar)\n");
     }
-    BEGIN(ON_STATE);
+    BEGIN(LANDED_STATE);
 
 }
-<ON_STATE,LANDED_STATE>"<Off>"    {
+<LANDED_STATE>"<Off>"    {
     if(!is_powered) {
         printf("ERRO: A nave já está desligada!\n");
     } else if(!can_power_off) {
@@ -75,7 +76,7 @@ void print_state_error() {
     BEGIN(INITIAL);
 
 }
-<ON_STATE>"<Take-Off>"    {
+<LANDED_STATE>"<Take-Off>"    {
     if(!is_powered) {
         printf("ERRO: A nave precisa estar ligada para decolar!\n");
     } else if(can_fly) {
@@ -99,7 +100,7 @@ void print_state_error() {
     BEGIN(LANDED_STATE);
 
 }
-<ON_STATE,FLYING_STATE,LANDED_STATE>"<Turn--"[LR]"--"([1-9][0-9]?|[12][0-9]{2}|3[0-5][0-9])">"    {
+<FLYING_STATE,LANDED_STATE>"<Turn--"[LR]"--"([1-9][0-9]?|[12][0-9]{2}|3[0-5][0-9])">"    {
     if(!is_powered) {
         printf("ERRO: A nave precisa estar ligada para virar!\n");
     } else {
@@ -119,7 +120,7 @@ void print_state_error() {
     }
 
 }
-<ON_STATE,FLYING_STATE,LANDED_STATE>"<Move--"[1-9][0-9]">"    {
+<FLYING_STATE,LANDED_STATE>"<Move--"[1-9][0-9]">"    {
     if(is_powered) {
         int distance = atoi(yytext + 7);
         calculate_position(distance);
@@ -128,7 +129,7 @@ void print_state_error() {
     }
 
 }
-<ON_STATE,FLYING_STATE>"<Fly--"[-+]?[1-9][0-9]">"    {
+<FLYING_STATE>"<Fly--"[-+]?[1-9][0-9]">"    {
     if(!can_fly) {
         printf("ERRO: Take-Off necessário antes de voar!\n");
     } else if (is_powered) {
@@ -148,8 +149,13 @@ void print_state_error() {
 
 [ \t\n]+    ; // Ignorar espaços em branco
 
-<INITIAL,ON_STATE,FLYING_STATE,LANDED_STATE>"<[^>]+>"   {  // Captura qualquer comando não permitido no estado atual 
-    print_state_error();                                  //e exibe erro sem mostrar o comando
+
+<INITIAL,LANDED_STATE,FLYING_STATE>"<"[A-Za-z0-9\-\+\.\_\>\<]*">" {
+    print_state_error();
+}
+. {
+    // Fallback for single characters or other unmatched inputs
+    printf("ERRO: Caractere inesperado: %c\n", *yytext);
 }
 
 %%

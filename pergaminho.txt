@@ -1,5 +1,4 @@
 <On--Ai42>
-
 <Move--50>
 <Turn--R--90>
 <Move--50>
@@ -8,10 +7,8 @@
 <Turn--L--90>
 <Move--50>
 <Turn--L--180>
-
 <Take-Off>
 <Fly--50>
 <Fly---50>
 <Land>
-
 <Off>
