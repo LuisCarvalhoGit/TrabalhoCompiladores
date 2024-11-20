@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 // Variáveis
 int is_powered = 0;
@@ -18,7 +19,6 @@ int current_direction = 90; // xx -> 0; yy -> 90 (inicial)
 
 // Função para calcular nova posição após movimento
 void calculate_position(int distance) {
-
     // Converter graus para radianos
     double radians = current_direction * M_PI / 180.0;
    
@@ -30,25 +30,25 @@ void calculate_position(int distance) {
     current_x += delta_x;
     current_y += delta_y;
    
-    printf("move(%.2f,%.2f,0)\n", delta_x, delta_y);
-    printf("INFO: Posição atual: (%.2f, %.2f, %d)\n", current_x, current_y, current_z);
+    printf("[MOVIMENTO] Deslocamento: (%.2f, %.2f, 0)\n", delta_x, delta_y);
+    printf("[STATUS] Posição: (%.2f, %.2f, %d) | Direção: %d° | Altitude: %d\n", 
+           current_x, current_y, current_z, current_direction, current_z);
 }
 
-// Função auxiliar para imprimir o estado atual
+// Função auxiliar para imprimir erros
 void print_state_error() {
-
-    printf("Comando não reconhecido: %s\n", yytext);
+    printf("[ERRO] Comando invalido: %s\n", yytext);
+    
     if (is_powered == 0) {
-        printf("ERRO: Comando inválido. A nave está desligada.\n");
+        printf("[ERRO] Nave DESLIGADA\n");
     } else if (can_fly == 0 && current_z == 0) {
-        printf("ERRO: Comando inválido. A nave está no estado LANDED_STATE.\n");
+        printf("[ERRO] Estado: LANDED\n");
     } else if (can_fly == 1) {
-        printf("ERRO: Comando inválido. A nave está no estado FLYING_STATE.\n");
+        printf("[ERRO] Estado: FLYING\n");
     } else {
-        printf("ERRO: Comando inválido no estado atual.\n");
+        printf("[ERRO] Estado invalido\n");
     }
 }
-
 
 %}
 
@@ -56,112 +56,117 @@ void print_state_error() {
 
 <INITIAL>"<On--"[AEIOUaeiou][A-Za-z][0-9]{2,3}">"    {
     if(is_powered) {
-        printf("ERRO: A nave já está ligada!\n");
+        printf("[ERRO] Nave ja esta ligada!\n");
     } else {
         is_powered = 1;
-        printf("acao(ligar)\n");
+        printf("[COMANDO] acao(ligar)\n");
     }
     BEGIN(LANDED_STATE);
-
 }
+
 <LANDED_STATE>"<Off>"    {
     if(!is_powered) {
-        printf("ERRO: A nave já está desligada!\n");
+        printf("[ERRO] Nave ja esta desligada!\n");
     } else if(!can_power_off) {
-        printf("ERRO: A nave precisa aterrar antes de desligar!\n");
+        printf("[ERRO] Precisa aterrar antes de desligar!\n");
     } else {
         is_powered = 0;
-        printf("acao(desligar)\n");
+        printf("[COMANDO] acao(desligar)\n");
     }
     BEGIN(INITIAL);
-
 }
+
 <LANDED_STATE>"<Take-Off>"    {
     if(!is_powered) {
-        printf("ERRO: A nave precisa estar ligada para decolar!\n");
+        printf("[ERRO] Precisa estar ligada para decolar!\n");
     } else if(can_fly) {
-        printf("ERRO: Nave já está em voo!\n");
+        printf("[ERRO] Ja esta em voo!\n");
     } else {
         can_fly = 1;
         can_power_off = 0;
-        printf("INFO: Modo de voo ativado!\n");
+        printf("[COMANDO] Decolagem iniciada\n");
     }
     BEGIN(FLYING_STATE);
-
 }
+
 <FLYING_STATE>"<Land>"    {
     if(current_z != 0) {
-        printf("ERRO: A nave precisa estar na altura 0 para aterrar!\n");
+        printf("[ERRO] Altitude deve ser zero para aterrissar!\n");
     } else {
         can_fly = 0;
         can_power_off = 1;
-        printf("INFO: Aterragem completa\n");
+        printf("[COMANDO] Aterragem concluida\n");
     }
     BEGIN(LANDED_STATE);
-
 }
+
 <FLYING_STATE,LANDED_STATE>"<Turn--"[LR]"--"([1-9][0-9]?|[12][0-9]{2}|3[0-5][0-9])">"    {
+    char direction_desc[10];
+    
     if(!is_powered) {
-        printf("ERRO: A nave precisa estar ligada para virar!\n");
+        printf("[ERRO] Precisa estar ligada para girar!\n");
     } else {
-        char direction = yytext[7]; // Posição de L ou R
-        int degrees = atoi(yytext + 10); // Posição após "--"
+        char direction = yytext[7];
+        int degrees = atoi(yytext + 10);
        
         if(direction == 'R') {
             current_direction = (current_direction - degrees) % 360;
+            strcpy(direction_desc, "direita");
         } else {
             current_direction = (current_direction + degrees) % 360;
-           
+            strcpy(direction_desc, "esquerda");
         }
+        
         if (current_direction < 0) {
             current_direction += 360;
         }
-        printf("INFO: A nave girou para %d graus\n", current_direction);
+        
+        
+        printf("[COMANDO] Rotacao de %dº para a %s | Nova direcao: %d°\n", 
+               degrees, direction_desc, current_direction);
     }
-
 }
+
 <FLYING_STATE,LANDED_STATE>"<Move--"[1-9][0-9]">"    {
     if(is_powered) {
         int distance = atoi(yytext + 7);
         calculate_position(distance);
     } else {
-        printf("ERRO: A nave precisa estar ligada para se mover!\n");
+        printf("[ERRO] Precisa estar ligada para se mover!\n");
     }
-
 }
+
 <FLYING_STATE>"<Fly--"[-+]?[1-9][0-9]">"    {
     if(!can_fly) {
-        printf("ERRO: Take-Off necessário antes de voar!\n");
+        printf("[ERRO] Decolagem necessaria antes de voar!\n");
     } else if (is_powered) {
         int height = atoi(yytext + 6);
         if(current_z + height < 0) {
-            printf("ERRO: Movimento resultaria em altura negativa!\n");
+            printf("[ERRO] Movimento resultaria em altitude negativa!\n");
         } else {
             current_z += height;
-            printf("move(0,0,%d)\n", height);
-            printf("INFO: Current height: %d\n", current_z);
+            printf("[COMANDO] Alteracao de altitude: %+d\n", height);
+            printf("[STATUS] Altitude atual: %d\n", current_z);
         }
     } else {
-        printf("ERRO: A nave precisa estar ligada para voar!\n");
+        printf("[ERRO] Precisa estar ligada para voar!\n");
     }
-
 }
 
 [ \t\n]+    ; // Ignorar espaços em branco
 
-
 <INITIAL,LANDED_STATE,FLYING_STATE>"<"[A-Za-z0-9\-\+\.\_\>\<]*">" {
     print_state_error();
 }
+
 . {
-    // Fallback for single characters or other unmatched inputs
-    printf("ERRO: Caractere inesperado: %c\n", *yytext);
+    printf("[ERRO] Caractere inesperado: %c\n", *yytext);
 }
 
 %%
 
-
 int main() {
+    printf("[SISTEMA] Controlo da Nave Inicializado\n");
     yylex();
     return 0;
 }
