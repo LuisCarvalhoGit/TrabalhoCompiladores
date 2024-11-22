@@ -9,7 +9,6 @@
 <Turn--L--180>
 <Take-Off>
 <Fly--50>
-<Move--50>
 <Fly---50>
 <Land>
 <Off>

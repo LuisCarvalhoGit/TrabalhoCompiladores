@@ -22,17 +22,21 @@ void calculate_position(int distance) {
     // Converter graus para radianos
     double radians = current_direction * M_PI / 180.0;
    
-    // Calcula componente x e y
-    double delta_x = distance * cos(radians);
-    double delta_y = distance * sin(radians);
+    // Calcula componente x e y, garantindo que não exista -0.00
+    double delta_x = (fabs(distance * cos(radians)) < 1e-10) ? 0.0 : distance * cos(radians);
+    double delta_y = (fabs(distance * sin(radians)) < 1e-10) ? 0.0 : distance * sin(radians);
    
     // Atualizar posição
     current_x += delta_x;
     current_y += delta_y;
+
+    // Arredonda valores muito pequenos para evitar -0.00
+    double x = (fabs(current_x) < 1e-10) ? 0.0 : current_x;
+    double y = (fabs(current_y) < 1e-10) ? 0.0 : current_y;
    
     printf("[MOVIMENTO] Deslocamento: (%.2f, %.2f, 0)\n", delta_x, delta_y);
-    printf("[STATUS] Posição: (%.2f, %.2f, %d) | Direção: %d° | Altitude: %d\n", 
-           current_x, current_y, current_z, current_direction, current_z);
+    printf("[STATUS] Posição: (%.2f, %.2f, %d) | Direção: %d°\n", 
+           x, y, current_z, current_direction);
 }
 
 // Função auxiliar para imprimir erros
@@ -96,6 +100,11 @@ void print_state_error() {
         can_fly = 0;
         can_power_off = 1;
         printf("[COMANDO] Aterragem concluida\n");
+        printf("[STATUS] Posição: (%.2f, %.2f, %d) | Direção: %d°\n", 
+                fabs(current_x) < 1e-10 ? 0.0 : current_x, 
+                fabs(current_y) < 1e-10 ? 0.0 : current_y, 
+                current_z, 
+                current_direction);
     }
     BEGIN(LANDED_STATE);
 }
