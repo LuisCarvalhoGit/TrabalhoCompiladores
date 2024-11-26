@@ -168,7 +168,7 @@ void print_state_error() {
     print_state_error();
 }
 
-. {
+<INITIAL,LANDED_STATE,FLYING_STATE>. {
     printf("[ERRO] Caractere inesperado: %c\n", *yytext);
 }
 
