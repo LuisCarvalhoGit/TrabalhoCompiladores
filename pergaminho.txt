@@ -1,6 +1,5 @@
 <On--Ai42>
-<Move--50>
-<Turn--R--90>
+<Turn--R--60>
 <Move--50>
 <Turn--R--180>
 <Move--50>
