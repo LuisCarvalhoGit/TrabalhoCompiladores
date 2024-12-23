@@ -26,10 +26,14 @@ FILE *output_file;
 %type <str> instruction_block
 %type <str> instructions
 %type <str> instruction
+%type <str> on_instruction off_instruction takeoff_instruction
+%type <str> land_instruction turn_instruction move_instruction
+%type <str> fly_instruction set_ship_instruction set_space_instruction
 
 %%
 
 program:
+    /* Empty program is allowed */
     | program instruction_block
     ;
 
@@ -37,30 +41,36 @@ instruction_block:
     START LPAREN SHIP_ID RPAREN ':' instructions ':' END {
         printf("[PARSER] Instruction block for ship %s processed successfully\n", $3);
         fprintf(output_file, "--- Instruction Block for Ship %s ---\n", $3);
+        $$ = $3; // Pass the SHIP_ID to the parent
     }
     ;
 
 instructions:
-    instruction
-    | instructions SEMICOLON instruction
+    instruction {
+        $$ = $1; // Single instruction
+    }
+    | instructions SEMICOLON instruction {
+        $$ = $1; // Combine multiple instructions (if needed for semantics)
+    }
     ;
 
 instruction: 
-    on_instruction
-    | off_instruction
-    | takeoff_instruction
-    | land_instruction
-    | turn_instruction
-    | move_instruction
-    | fly_instruction
-    | set_ship_instruction
-    | set_space_instruction
+    on_instruction { $$ = $1; }
+    | off_instruction { $$ = $1; }
+    | takeoff_instruction { $$ = $1; }
+    | land_instruction { $$ = $1; }
+    | turn_instruction { $$ = $1; }
+    | move_instruction { $$ = $1; }
+    | fly_instruction { $$ = $1; }
+    | set_ship_instruction { $$ = $1; }
+    | set_space_instruction { $$ = $1; }
     ;
 
 on_instruction: 
     ON { 
         printf("[PARSER] Power On Instruction\n");
         fprintf(output_file, "acao(ligar)\n"); 
+        $$ = strdup("ON");
     }
     ;
 
@@ -68,48 +78,56 @@ off_instruction:
     OFF { 
         printf("[PARSER] Power Off Instruction\n");
         fprintf(output_file, "acao(desligar)\n"); 
+        $$ = strdup("OFF");
     }
     ;
 
 takeoff_instruction: 
     TAKE_OFF { 
         printf("[PARSER] Take Off Instruction\n");
+        $$ = strdup("TAKE_OFF");
     }
     ;
 
 land_instruction: 
     LAND { 
         printf("[PARSER] Land Instruction\n");
+        $$ = strdup("LAND");
     }
     ;
 
 turn_instruction: 
     TURN { 
         printf("[PARSER] Turn Instruction\n");
+        $$ = strdup("TURN");
     }
     ;
 
 move_instruction: 
     MOVE { 
         printf("[PARSER] Move Instruction\n");
+        $$ = strdup("MOVE");
     }
     ;
 
 fly_instruction: 
     FLY { 
         printf("[PARSER] Fly Instruction\n");
+        $$ = strdup("FLY");
     }
     ;
 
 set_ship_instruction:
     SET_SHIP { 
         printf("[PARSER] Set Ship Instruction\n");
+        $$ = strdup("SET_SHIP");
     }
     ;
 
 set_space_instruction:
     SET_SPACE { 
         printf("[PARSER] Set Space Instruction\n");
+        $$ = strdup("SET_SPACE");
     }
     ;
 
