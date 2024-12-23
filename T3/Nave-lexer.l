@@ -1,7 +1,7 @@
 %{
 #include <stdio.h>
 #include <string.h>
-#include "y.tab.h"
+#include "Nave-parser.tab.h"
 
 int line_num = 1;
 %}
