@@ -2,16 +2,17 @@ CC=gcc
 BISON=bison 
 BISON_INPUT=Nave-parser.y
 BISON_OUTPUT=Nave-parser.tab.c
+BISON_HEADER=Nave-parser.tab.h
 LEX=lex
 LEX_OUTPUT=lex.yy.c 
-LEX_INPUT=Nave.lexer.l 
+LEX_INPUT=Nave-lexer.l 
 CFLAGS=-lfl
-TARGETS=Nave-parser.tab.c lex.yy.c a.out
+TARGETS=${BISON_OUTPUT} ${LEX_OUTPUT} a.out
 
 all: ${TARGETS}
 
-# gerar o ficheiro Nave-parser.tab.c
-${BISON_OUTPUT}: ${BISON_INPUT}
+# gerar o ficheiro Nave-parser.tab.c e Nave-parser.tab.h
+${BISON_OUTPUT} ${BISON_HEADER}: ${BISON_INPUT}
 	${BISON} -d ${BISON_INPUT}
 
 # gerar o ficheiro lex.yy.c
@@ -23,4 +24,5 @@ a.out: ${BISON_OUTPUT} ${LEX_OUTPUT}
 	${CC} ${BISON_OUTPUT} ${LEX_OUTPUT} ${CFLAGS} -o a.out
 
 clean:
-	rm -f ${BISON_OUTPUT} ${LEX_OUTPUT} a.out Nave-parser.tab.h
+	@rm -f ${BISON_OUTPUT} ${LEX_OUTPUT} a.out ${BISON_HEADER}
+
