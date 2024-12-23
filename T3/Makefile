@@ -5,7 +5,7 @@ BISON_OUTPUT=Nave-parser.tab.c
 BISON_HEADER=Nave-parser.tab.h
 LEX=lex
 LEX_OUTPUT=lex.yy.c 
-LEX_INPUT=Nave-lexer.l 
+LEX_INPUT=Nave-lexer.l
 CFLAGS=-lfl
 TARGETS=${BISON_OUTPUT} ${LEX_OUTPUT} a.out
 
