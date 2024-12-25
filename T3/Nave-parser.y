@@ -5,6 +5,8 @@
 #include <math.h>
 
 // External function declarations
+extern double init_x, init_y, init_z;
+extern double min_x, min_y, max_x, max_y, max_z;
 extern int yylex();
 extern char* yytext;
 extern int is_powered;
@@ -59,8 +61,10 @@ program:
     ;
 
 instruction_block: 
-    START LPAREN SHIP_ID RPAREN COLON init_instructions instruction_list COLON END {
-        printf("Successfully parsed instruction block for ship %s\n", $3);
+    START LPAREN SHIP_ID RPAREN COLON {
+        fprintf(output_file, "%s\n", $3); // Write Ship ID as soon as it's parsed
+    }
+    init_instructions instruction_list COLON END {
         flush_move_buffer();
         fprintf(output_file, "--- End of instructions for ship %s ---\n\n", $3);
         free($3);
@@ -68,19 +72,18 @@ instruction_block:
     ;
 
 init_instructions:
-    /* Empty */
-    | SET_SHIP {
-        fprintf(output_file, "init%s\n", $1);
-        free($1);
+    /* Empty is allowed */
+    | init_command
+    | init_command SEMICOLON init_command
+    ;
+
+init_command:
+    SET_SHIP {
+        fprintf(output_file, "init (%.2f, %.2f, %.2f) %d\n", init_x, init_y, init_z, is_powered);
     }
     | SET_SPACE {
-        fprintf(output_file, "initspace%s\n", $1);
-        free($1);
-    }
-    | SET_SHIP SET_SPACE {
-        fprintf(output_file, "init%s\ninitspace%s\n", $1, $2);
-        free($1);
-        free($2);
+        fprintf(output_file, "initspace (%.2f, %.2f, 0) (%.2f, %.2f, %.2f)\n", 
+                                        min_x, min_y,   max_x, max_y, max_z);
     }
     ;
 
