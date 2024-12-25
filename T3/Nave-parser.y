@@ -60,6 +60,7 @@ program:
 
 instruction_block: 
     START LPAREN SHIP_ID RPAREN COLON init_instructions instruction_list COLON END {
+        printf("Successfully parsed instruction block for ship %s\n", $3);
         flush_move_buffer();
         fprintf(output_file, "--- End of instructions for ship %s ---\n\n", $3);
         free($3);
