@@ -42,13 +42,14 @@ void calculate_position(int distance, double *delta_x, double *delta_y) {
 }
 
 "<On--"[AEIOUaeiou][A-Za-z][0-9]{2,3}">" { 
+    printf("Found On\n");
     yylval.str = strdup(yytext);
     return ON; 
 }
 
-"<Off>"             { return OFF; }
-"<Take-Off>"        { return TAKE_OFF; }
-"<Land>"            { return LAND; }
+"<Off>"             { printf("Found Off\n"); return OFF; }
+"<Take-Off>"        { printf("Found Take-Off\n"); return TAKE_OFF; }
+"<Land>"            { printf("Found Land\n"); return LAND; }
 
 "<Turn--"[LR]"--"([1-9][0-9]?|[12][0-9]{2}|3[0-5][0-9])">" { 
     printf("Found Turn\n");
@@ -57,11 +58,13 @@ void calculate_position(int distance, double *delta_x, double *delta_y) {
 }
 
 "<Move--"[1-9][0-9]">"  { 
+    printf("Found Move\n");
     yylval.str = strdup(yytext);
     return MOVE; 
 }
 
 "<Fly--"[-+]?[1-9][0-9]">" { 
+    printf("Found Fly\n");
     yylval.str = strdup(yytext);
     return FLY; 
 }

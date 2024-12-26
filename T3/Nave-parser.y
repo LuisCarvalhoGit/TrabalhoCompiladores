@@ -33,12 +33,12 @@ int move_count = 0;
 
 void flush_move_buffer() {
     if (move_count > 0) {
-        fprintf(output_file, "move");
+        fprintf(output_file, "move");  // Write "move" only once
         for (int i = 0; i < move_count; i++) {
             fprintf(output_file, "(%.2f,%.2f,%.2f)", 
                     move_buffer[i].x, move_buffer[i].y, move_buffer[i].z);
         }
-        fprintf(output_file, "\n");
+        fprintf(output_file, "\n");  // Single newline after all coordinates
         move_count = 0;
     }
 }
@@ -107,7 +107,7 @@ instruction:
         flush_move_buffer();
         if (!is_powered) {
             fprintf(stderr, "Error: Ship already powered off\n");
-        } else if (!can_power_off) {
+        } else if (!can_power_off && current_z > 0) {
             fprintf(stderr, "Error: Must land before powering off\n");
         } else {
             is_powered = 0;
@@ -121,8 +121,16 @@ instruction:
         } else {
             can_fly = 1;
             can_power_off = 0;
-            fprintf(output_file, "take-off\n");
         }
+    }
+    | LAND {
+        flush_move_buffer();
+        if(current_z != 0) {
+        fprintf(stderr,"Error: Altitude deve ser zero para aterrar!\n");
+        } else {
+        can_fly = 0;
+        can_power_off = 1;
+    }
     }
     | movement_sequence {
         flush_move_buffer();
@@ -207,25 +215,12 @@ void yyerror(const char* s) {
     fprintf(stderr, "Error: %s\n", s);
 }
 
-int main(int argc, char** argv) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <input_file>\n", argv[0]);
-        return 1;
-    }
-
-    // Open input file
-    extern FILE *yyin;
-    yyin = fopen(argv[1], "r");
-    if (!yyin) {
-        perror("Error opening input file");
-        return 1;
-    }
-
+int main() {
+    
     // Open output file
     output_file = fopen("Alienship.txt", "w");
     if (!output_file) {
         perror("Error creating output file");
-        fclose(yyin);
         return 1;
     }
 
@@ -234,7 +229,6 @@ int main(int argc, char** argv) {
     yyparse();
 
     // Close files
-    fclose(yyin);
     fclose(output_file);
 
     printf("[PARSER] Parsing complete. Check Alienship.txt for output.\n");

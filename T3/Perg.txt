@@ -1,4 +1,8 @@
 START (Ai42) :
 <On--Ai42>;
+<Take-Off>;
+<Move--50>;
+<Move--60>;
+<Land>;
 <Off>
 : END
