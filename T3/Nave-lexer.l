@@ -57,7 +57,7 @@ void calculate_position(int distance, double *delta_x, double *delta_y) {
     return TURN; 
 }
 
-"<Move--"[1-9][0-9]">"  { 
+"<Move--"[0-9]+">"  { 
     printf("Found Move\n");
     yylval.str = strdup(yytext);
     return MOVE; 

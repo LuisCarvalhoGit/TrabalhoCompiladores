@@ -18,7 +18,8 @@ extern int current_z;
 extern int current_direction;
 extern void calculate_position(int distance, double *delta_x, double *delta_y);
 
-void yyerror(const char *s);
+void yyerror(const char* s); // Function prototype for yyerror
+
 
 // Output file handling
 FILE *output_file;
@@ -96,7 +97,7 @@ instruction:
     ON {
         flush_move_buffer();
         if (is_powered) {
-            fprintf(stderr, "Error: Ship already powered on\n");
+            yyerror("Ship already powered on");
         } else {
             is_powered = 1;
             fprintf(output_file, "acao(ligar)  ");
@@ -106,31 +107,25 @@ instruction:
     | OFF {
         flush_move_buffer();
         if (!is_powered) {
-            fprintf(stderr, "Error: Ship already powered off\n");
+            yyerror("Ship already powered off");
         } else if (!can_power_off && current_z > 0) {
-            fprintf(stderr, "Error: Must land before powering off\n");
+            yyerror("Must land before powering off");
         } else {
             is_powered = 0;
             fprintf(output_file, "acao(desligar)  ");
         }
     }
-    | TAKE_OFF {
-        flush_move_buffer();
-        if (!is_powered) {
-            fprintf(stderr, "Error: Ship must be powered on to take off\n");
-        } else {
-            can_fly = 1;
-            can_power_off = 0;
-        }
-    }
     | LAND {
         flush_move_buffer();
-        if(current_z != 0) {
-        fprintf(stderr,"Error: Altitude deve ser zero para aterrar!\n");
+        if (!can_fly) {
+            yyerror("Ship must be in the air to land");
+        } else if (current_z != 0) {
+            yyerror("Ship must be at altitude 0 to land");
         } else {
-        can_fly = 0;
-        can_power_off = 1;
-    }
+            can_fly = 0;  // The ship has landed
+            can_power_off = 1;  // Allow powering off after landing
+            fprintf(output_file, "acao(aterrar)  ");
+        }
     }
     | SET_SHIP {
         flush_move_buffer();
@@ -141,23 +136,46 @@ instruction:
         fprintf(output_file, "initspace (%.2f, %.2f, 0) (%.2f, %.2f, %.2f)\t", 
                                         min_x, min_y,   max_x, max_y, max_z);
     }
-    | movement_sequence {
+    | TAKE_OFF {
         flush_move_buffer();
-    }
-    ;
-
-movement_sequence:
-    movement
-    | movement_sequence movement
-    ;
-
-movement:
-    MOVE {
         if (!is_powered) {
-            fprintf(stderr, "Error: Ship must be powered on to move\n");
+            yyerror("Ship must be powered on to take off");
+        } else if (can_fly) {
+            yyerror("Ship is already in the air");
+        } else {
+            can_fly = 1;  // Allow the ship to fly
+            can_power_off = 0;  // Disable powering off while in the air
+            fprintf(output_file, "acao(Take-off)  ");
+        }
+    }
+    |TURN {
+        flush_move_buffer();
+        if (!is_powered) {
+            yyerror("Ship must be powered on to turn");
+        } else {
+            char direction;
+            int degrees;
+            sscanf($1, "<Turn--%c--%d>", &direction, &degrees);  // Parse the direction and degrees from the lexeme
+            
+            if (degrees <= 0 || degrees >= 360) {
+                yyerror("Invalid turn angle");
+            } else {
+                if (direction == 'R') {
+                    current_direction = (current_direction - degrees + 360) % 360;
+                } else {
+                    current_direction = (current_direction + degrees) % 360;
+                }
+                fprintf(output_file, "turn(%c,%d)\t", direction, degrees);
+            }
+        }
+        free($1);
+    }
+    |MOVE {
+        if (!is_powered) {
+            yyerror("Ship must be powered on to move");
         } else {
             int distance;
-            sscanf($1, "<Move--%d>", &distance);
+            sscanf($1, "<Move--%d>", &distance);  // Parse the distance from the lexeme
             double delta_x, delta_y;
             calculate_position(distance, &delta_x, &delta_y);
             
@@ -171,39 +189,18 @@ movement:
         }
         free($1);
     }
-    | TURN {
-        flush_move_buffer();
-        if (!is_powered) {
-            fprintf(stderr, "Error: Ship must be powered on to turn\n");
-        } else {
-            char direction;
-            int degrees;
-            sscanf($1, "<Turn--%c--%d>", &direction, &degrees);
-            
-            if (degrees <= 0 || degrees >= 360) {
-                fprintf(stderr, "Error: Invalid turn angle\n");
-            } else {
-                if (direction == 'R') {
-                    current_direction = (current_direction - degrees + 360) % 360;
-                } else {
-                    current_direction = (current_direction + degrees) % 360;
-                }
-                fprintf(output_file, "turn(%c,%d)  ", direction, degrees);
-            }
-        }
-        free($1);
-    }
     | FLY {
+        flush_move_buffer();
         if (!can_fly) {
-            fprintf(stderr, "Error: Must take off before flying\n");
+            yyerror("Ship must take off before flying");
         } else if (!is_powered) {
-            fprintf(stderr, "Error: Ship must be powered on to fly\n");
+            yyerror("Ship must be powered on to fly");
         } else {
             int height;
             sscanf($1, "<Fly--%d>", &height);
-            
+
             if (current_z + height < 0) {
-                fprintf(stderr, "Error: Cannot fly below ground level\n");
+                yyerror("Cannot fly below ground level");
             } else {
                 move_buffer[move_count].x = 0;
                 move_buffer[move_count].y = 0;
@@ -216,8 +213,6 @@ movement:
     }
     ;
 
-
-
 %%
 
 void yyerror(const char* s) {
@@ -225,7 +220,6 @@ void yyerror(const char* s) {
 }
 
 int main() {
-    
     // Open output file
     output_file = fopen("Alienship.txt", "w");
     if (!output_file) {

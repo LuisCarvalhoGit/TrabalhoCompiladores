@@ -26,3 +26,4 @@ a.out: ${BISON_OUTPUT} ${LEX_OUTPUT}
 clean:
 	@rm -f ${BISON_OUTPUT} ${LEX_OUTPUT} a.out ${BISON_HEADER} Alienship.txt
 
+
