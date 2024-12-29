@@ -1,0 +1,2 @@
+Ai42	acao(ligar)  move(0.00,50.00,0.00) move(0.00,60.00,0.00) acao(desligar)  --- End of instructions for ship Ai42 ---
+

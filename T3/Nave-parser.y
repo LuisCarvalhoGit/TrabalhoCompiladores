@@ -38,7 +38,7 @@ void flush_move_buffer() {
             fprintf(output_file, "(%.2f,%.2f,%.2f)", 
                     move_buffer[i].x, move_buffer[i].y, move_buffer[i].z);
         }
-        fprintf(output_file, "\n");  // Single newline after all coordinates
+        fprintf(output_file, " ");  // Single newline after all coordinates
         move_count = 0;
     }
 }
@@ -62,7 +62,7 @@ program:
 
 instruction_block: 
     START LPAREN SHIP_ID RPAREN COLON {
-        fprintf(output_file, "%s\n", $3); // Write Ship ID as soon as it's parsed
+        fprintf(output_file, "%s\t", $3); // Write Ship ID as soon as it's parsed
     }
     init_instructions instruction_list COLON END {
         flush_move_buffer();
@@ -79,10 +79,10 @@ init_instructions:
 
 init_command:
     SET_SHIP {
-        fprintf(output_file, "init (%.2f, %.2f, %.2f) %d\n", init_x, init_y, init_z, is_powered);
+        fprintf(output_file, "init (%.2f, %.2f, %.2f) %d\t", init_x, init_y, init_z, is_powered);
     }
     | SET_SPACE {
-        fprintf(output_file, "initspace (%.2f, %.2f, 0) (%.2f, %.2f, %.2f)\n", 
+        fprintf(output_file, "initspace (%.2f, %.2f, 0) (%.2f, %.2f, %.2f)\t", 
                                         min_x, min_y,   max_x, max_y, max_z);
     }
     ;
@@ -99,7 +99,7 @@ instruction:
             fprintf(stderr, "Error: Ship already powered on\n");
         } else {
             is_powered = 1;
-            fprintf(output_file, "acao(ligar)\n");
+            fprintf(output_file, "acao(ligar)  ");
         }
         free($1);
     }
@@ -111,7 +111,7 @@ instruction:
             fprintf(stderr, "Error: Must land before powering off\n");
         } else {
             is_powered = 0;
-            fprintf(output_file, "acao(desligar)\n");
+            fprintf(output_file, "acao(desligar)  ");
         }
     }
     | TAKE_OFF {
@@ -179,7 +179,7 @@ movement:
                 } else {
                     current_direction = (current_direction + degrees) % 360;
                 }
-                fprintf(output_file, "turn(%c,%d)\n", direction, degrees);
+                fprintf(output_file, "turn(%c,%d)  ", direction, degrees);
             }
         }
         free($1);
