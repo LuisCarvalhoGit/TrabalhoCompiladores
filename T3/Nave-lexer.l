@@ -69,22 +69,22 @@ void calculate_position(int distance, double *delta_x, double *delta_y) {
     return FLY; 
 }
 
-"<Set-Ship--"[0-9]+"--"[0-9]+"--"[0-9]+"--"(0|[1-9][0-9]?|[12][0-9]{2}|3[0-5][0-9])"--"[01]">" { 
+"<Set-Ship--"[0-9]+"--"[0-9]+"--"[0-9]+"--"(0|[1-9][0-9]?|[12][0-9]{2}|3[0-5][0-9])"--"[01]">" {
     //         X         Y         Z                       DG                           ON   
     sscanf(yytext, "<Set-Ship--%lf--%lf--%lf--%*f--%d>", 
            &init_x, &init_y, &init_z, &is_powered);
     printf("Found Set-Ship\n");
     yylval.str = strdup(yytext);
-    return SET_SHIP; 
+    return SET_SHIP;
 }
 
-"<Set-Space--"[0-9]+"--"[0-9]+"--"[0-9]+"--"[0-9]+"--"[0-9]+">" { 
+"<Set-Space--"[0-9]+"--"[0-9]+"--"[0-9]+"--"[0-9]+"--"[0-9]+">" {
     //         X1        Y1        X2        Y2        Z2
     sscanf(yytext, "<Set-Space--%lf--%lf--%lf--%lf--%lf>", 
            &min_x, &min_y, &max_x, &max_y, &max_z);
     printf("Found Set-Space\n");
     yylval.str = strdup(yytext);
-    return SET_SPACE; 
+    return SET_SPACE;
 }
 
 [ \t\r]+            ; // Ignore whitespace

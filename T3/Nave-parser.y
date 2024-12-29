@@ -132,6 +132,15 @@ instruction:
         can_power_off = 1;
     }
     }
+    | SET_SHIP {
+        flush_move_buffer();
+        fprintf(output_file, "init (%.2f, %.2f, %.2f) %d\t", init_x, init_y, init_z, is_powered);
+    }
+    | SET_SPACE {
+        flush_move_buffer();
+        fprintf(output_file, "initspace (%.2f, %.2f, 0) (%.2f, %.2f, %.2f)\t", 
+                                        min_x, min_y,   max_x, max_y, max_z);
+    }
     | movement_sequence {
         flush_move_buffer();
     }
