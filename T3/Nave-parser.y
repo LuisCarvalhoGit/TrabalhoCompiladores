@@ -4,9 +4,10 @@
 #include <string.h>
 #include <math.h>
 
+
 // External function declarations
 extern double init_x, init_y, init_z;
-extern double min_x, min_y, max_x, max_y, max_z;
+extern double min_x, min_y, min_z, max_x, max_y, max_z;
 extern int yylex();
 extern char* yytext;
 extern int is_powered;
@@ -31,6 +32,22 @@ typedef struct {
 
 Movement move_buffer[100];
 int move_count = 0;
+
+void reset_ship_state() {
+    is_powered = 0;
+    can_fly = 0;
+    can_power_off = 1;
+    current_x = 0;
+    current_y = 0;
+    current_z = 0;
+    current_direction = 90;
+    move_count = 0;
+    min_x = 0;
+    min_y = 0; 
+    max_x = 100; 
+    max_y = 100;
+    max_z = 100;
+}
 
 void flush_move_buffer() {
     if (move_count > 0) {
@@ -58,24 +75,35 @@ void flush_move_buffer() {
 
 program:
     /* Empty program is allowed */
-    | program instruction_block
+    | program instruction_block {
+        reset_ship_state();
+    }
     ;
 
 instruction_block: 
     START LPAREN SHIP_ID RPAREN COLON {
         fprintf(output_file, "%s\t", $3); // Write Ship ID as soon as it's parsed
     }
-    init_instructions instruction_list COLON END {
+    BLOCK_CONTENT COLON END {
         flush_move_buffer();
         fprintf(output_file, "--- End of instructions for ship %s ---\n\n", $3);
         free($3);
     }
     ;
 
-init_instructions:
-    /* Empty is allowed */
-    | init_command
-    | init_command SEMICOLON init_command
+BLOCK_CONTENT:
+    instruction_sequence
+    ;
+
+instruction_sequence:
+    command_list
+    | init_sequence SEMICOLON command_list
+    | init_sequence
+    ;
+
+init_sequence:
+    init_command
+    | init_sequence SEMICOLON init_command
     ;
 
 init_command:
@@ -88,12 +116,12 @@ init_command:
     }
     ;
 
-instruction_list:
-    instruction
-    | instruction_list SEMICOLON instruction
+command_list:
+    command
+    | command_list SEMICOLON command
     ;
 
-instruction: 
+command: 
     ON {
         flush_move_buffer();
         if (is_powered) {
@@ -124,17 +152,7 @@ instruction:
         } else {
             can_fly = 0;  // The ship has landed
             can_power_off = 1;  // Allow powering off after landing
-            fprintf(output_file, "acao(aterrar)  ");
         }
-    }
-    | SET_SHIP {
-        flush_move_buffer();
-        fprintf(output_file, "init (%.2f, %.2f, %.2f) %d\t", init_x, init_y, init_z, is_powered);
-    }
-    | SET_SPACE {
-        flush_move_buffer();
-        fprintf(output_file, "initspace (%.2f, %.2f, 0) (%.2f, %.2f, %.2f)\t", 
-                                        min_x, min_y,   max_x, max_y, max_z);
     }
     | TAKE_OFF {
         flush_move_buffer();
@@ -145,10 +163,9 @@ instruction:
         } else {
             can_fly = 1;  // Allow the ship to fly
             can_power_off = 0;  // Disable powering off while in the air
-            fprintf(output_file, "acao(Take-off)  ");
         }
     }
-    |TURN {
+    | TURN {
         flush_move_buffer();
         if (!is_powered) {
             yyerror("Ship must be powered on to turn");
@@ -165,12 +182,11 @@ instruction:
                 } else {
                     current_direction = (current_direction + degrees) % 360;
                 }
-                fprintf(output_file, "turn(%c,%d)\t", direction, degrees);
             }
         }
         free($1);
     }
-    |MOVE {
+    | MOVE {
         if (!is_powered) {
             yyerror("Ship must be powered on to move");
         } else {
@@ -190,7 +206,6 @@ instruction:
         free($1);
     }
     | FLY {
-        flush_move_buffer();
         if (!can_fly) {
             yyerror("Ship must take off before flying");
         } else if (!is_powered) {

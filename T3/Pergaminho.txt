@@ -1,5 +1,5 @@
 START (Ai42) :
-<Set-Ship--0--10--0--0--1>;
+<Set-Ship--0--10--0--0--1>; 
 <Set-Space--0--0--50--50--50>;
 <Turn--R--90>;
 <Move--30>;
@@ -12,9 +12,9 @@ START (Ai42) :
 : END
 
 START (AS543) :
-<Turn--R--90>
+<Set-Ship--0--0--0--5--1>
+<Turn--R--90>;
 <Move--50>
-<Set-Ship--0--0--0--5>;
 : END
 
 START (EE123) :

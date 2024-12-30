@@ -1,10 +1,11 @@
 START (Ai42) :
-<On--Ai42>;
 <Set-Ship--0--10--0--0--1>;
-<Set-Space--0--0--50--50--50>;
+<Set-Space--0--0--150--150--150>;
 <Take-Off>;
-<Move--50>;
-<Move--60>;
+<Fly--15>;
+<Move--10>;
+<Move--20>;
+<Fly---15>;
 <Land>;
 <Off>
 : END

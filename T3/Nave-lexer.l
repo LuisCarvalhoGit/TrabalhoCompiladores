@@ -7,7 +7,7 @@
 
 // State variables
 double init_x, init_y, init_z;
-double min_x, min_y, max_x, max_y, max_z;
+double min_x = 0, min_y = 0, min_z = 0, max_x = 100, max_y = 100, max_z = 100;
 int is_powered = 0;
 int can_fly = 0;
 int can_power_off = 1;
