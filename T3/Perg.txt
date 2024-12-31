@@ -1,4 +1,6 @@
 START (Ai42) :
+<Set-Space--0--0--50--50--50>;
+<Set-Ship--0--10--0--0--1>dsfdfdsf;
 <Take-Off>;
 <Fly--15>;
 <Move--10>;
