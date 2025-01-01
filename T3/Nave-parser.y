@@ -6,6 +6,7 @@
 
 // External function declarations
 extern double init_x, init_y, init_z;
+extern int input_degrees;
 extern double min_x, min_y, min_z, max_x, max_y, max_z;
 extern int yylex();
 extern char* yytext;
@@ -17,6 +18,11 @@ extern double current_y;
 extern int current_z;
 extern int current_direction;
 extern void calculate_position(int distance, double *delta_x, double *delta_y);
+
+void print_position(const char* instruction) {
+    printf("[%s] Current position: (%.2f, %.2f, %d) Direction: %d°\n", 
+           instruction, current_x, current_y, current_z, current_direction);
+}
 
 void yyerror(const char* s);
 
@@ -193,6 +199,7 @@ command:
         } else {
             is_powered = 1;
             add_to_buffer("acao(ligar)  ");
+            print_position("ON");
         }
         free($1);
     }
@@ -205,10 +212,10 @@ command:
         } else {
             is_powered = 0;
             add_to_buffer("acao(desligar)  ");
+            print_position("OFF");
         }
     }
     | LAND {
-        flush_move_buffer();
         if (!can_fly) {
             yyerror("Ship must be in the air to land");
         } else if (current_z != 0) {
@@ -216,10 +223,10 @@ command:
         } else {
             can_fly = 0;
             can_power_off = 1;
+            print_position("LAND");
         }
     }
     | TAKE_OFF {
-        flush_move_buffer();
         if (!is_powered) {
             yyerror("Ship must be powered on to take off");
         } else if (can_fly) {
@@ -227,10 +234,10 @@ command:
         } else {
             can_fly = 1;
             can_power_off = 0;
+            print_position("TAKE_OFF");
         }
     }
     | TURN {
-        flush_move_buffer();
         if (!is_powered) {
             yyerror("Ship must be powered on to turn");
         } else {
@@ -246,6 +253,7 @@ command:
                 } else {
                     current_direction = (current_direction + degrees) % 360;
                 }
+                print_position("TURN");
             }
         }
         free($1);
@@ -258,16 +266,22 @@ command:
         double new_x = current_x + delta_x;
         double new_y = current_y + delta_y;
         
-        if (!is_within_boundaries(new_x, new_y, current_z)) {
-            yyerror("Move exceeds space boundaries");
+        if(is_powered) {
+            if (!is_within_boundaries(new_x, new_y, current_z)) {
+                yyerror("Move exceeds space boundaries");
+            } else {
+                move_buffer[move_count].x = delta_x;
+                move_buffer[move_count].y = delta_y;
+                move_buffer[move_count].z = 0;
+                move_count++;
+                current_x = new_x;
+                current_y = new_y;
+                print_position("MOVE");
+            }
         } else {
-            move_buffer[move_count].x = delta_x;
-            move_buffer[move_count].y = delta_y;
-            move_buffer[move_count].z = 0;
-            move_count++;
-            current_x = new_x;
-            current_y = new_y;
+            yyerror("Ship must be turned on to move");
         }
+        
         free($1);
     }
     | FLY {
@@ -275,15 +289,21 @@ command:
         sscanf($1, "<Fly--%d>", &height);
         double new_z = current_z + height;
         
-        if (!is_within_boundaries(current_x, current_y, new_z)) {
+        if(can_fly) {
+            if (!is_within_boundaries(current_x, current_y, new_z)) {
             yyerror("Fly exceeds space boundaries");
+            } else {
+                move_buffer[move_count].x = 0;
+                move_buffer[move_count].y = 0;
+                move_buffer[move_count].z = height;
+                move_count++;
+                current_z = new_z;
+                print_position("FLY");
+            }
         } else {
-            move_buffer[move_count].x = 0;
-            move_buffer[move_count].y = 0;
-            move_buffer[move_count].z = height;
-            move_count++;
-            current_z = new_z;
+            yyerror("Take-Off necessary before flying");
         }
+        
         free($1);
     }
     ;

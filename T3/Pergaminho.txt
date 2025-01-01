@@ -1,23 +1,26 @@
-START (Ai42) :
-<Set-Ship--0--10--0--0--1>; 
-<Set-Space--0--0--50--50--50>;
-<Turn--R--90>;
+START (Ai42) : 
+<Set-Ship--0--0--0--90--1>;
+<Set-Space---50---50--50--50--50>;
+<Turn--L--90>;
 <Move--30>;
 <Take-Off>;
 <Fly--50>;
 <Turn--L--90>;
 <Move--10>;
+<Fly---50>;
 <Land>;
 <Off>
 : END
 
 START (AS543) :
-<Set-Ship--0--0--0--5--1>
+<Set-Ship--0--0--0--5--1>;
 <Turn--R--90>;
 <Move--50>
 : END
 
 START (EE123) :
+<On--EE123>;
 <Turn--R--90>;
-<Move--500>
+<Move--50>;
+<Fly--50>
 : END
