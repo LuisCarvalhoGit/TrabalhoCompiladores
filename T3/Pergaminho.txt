@@ -21,7 +21,7 @@ START (AS543) :
 : END
 
 START (EE123) :
-<Set-Space---50---50--50--50--50>;
+
 <On--EE123>;
 <Turn--R--90>;
 <Move--50>;

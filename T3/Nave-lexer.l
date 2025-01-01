@@ -29,12 +29,10 @@ void calculate_position(int distance, double *delta_x, double *delta_y) {
 
 %%
 
-"START"             { printf("Found START token\n"); return START; }
-"END"              { printf("Found END token\n"); return END; }
-";"                { printf("Found SEMICOLON\n"); return SEMICOLON; }
-"("                { printf("Found LPAREN\n"); return LPAREN; }
-")"                { printf("Found RPAREN\n"); return RPAREN; }
-":"                { printf("Found COLON\n"); return COLON; }
+"START"[ \t]*"("    { printf("Found START and LPAREN\n"); return START_LPAREN; }
+")"[ \t]*":"        { printf("Found RPAREN and COLON\n"); return RPAREN_COLON; }
+";"                 { printf("Found SEMICOLON\n"); return SEMICOLON; }
+":"[ \t]*"END"      { printf("Found COLON and END\n"); return COLON_END; }
 
 [AEIOUaeiou][A-Za-z][0-9]{2,3} {
     printf("Found SHIP_ID\n");
@@ -81,7 +79,7 @@ void calculate_position(int distance, double *delta_x, double *delta_y) {
 }
 
 "<Set-Space--"[-+]?[0-9]+"--"[-+]?[0-9]+"--"[-+]?[0-9]+"--"[-+]?[0-9]+"--"[0-9]+">" {
-    //         X1        Y1        X2        Y2        Z2
+    //              X1              Y1             X2             Y2        Z2
     sscanf(yytext, "<Set-Space--%lf--%lf--%lf--%lf--%lf>", 
            &min_x, &min_y, &max_x, &max_y, &max_z);
     printf("Found Set-Space\n");
@@ -90,6 +88,6 @@ void calculate_position(int distance, double *delta_x, double *delta_y) {
 }
 
 [ \t\r\n]+            ; // Ignore whitespace
-.                   ; // Ignore random text
+.                     ; // Ignore random text
 
 %%

@@ -1,4 +1,4 @@
-START (oi98) : //////:&/&WE
+START (oi98) : //////:(&/(&WE
 <Set-Ship--0--10--0--0--1>dsfdfdsf;
 <Set-Space--0--0--50--50--50>;
 sdasasda%%&&/<Turn--R--90>;
@@ -12,12 +12,12 @@ eeefre<Take-Off>;
 : END
 
 START (AS543) :
-<Turn--R--90>
-<Move--50>
-<Set-Ship--0--0--0--5>;
+<Turn--R--90>;
+<Move--50>;
+<Set-Ship--0--0--0--5>
 : END
 
 START (EE123) :
 2323233232rrrr<Turn--R--90>;
-<Move--500>fghhhh""
+<Move--500>fghh;hh""
 : END

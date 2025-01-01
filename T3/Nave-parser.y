@@ -147,7 +147,7 @@ void write_all_commands() {
     int num;
 }
 
-%token START END SEMICOLON LPAREN RPAREN COLON
+%token START_LPAREN RPAREN_COLON SEMICOLON COLON_END
 %token <str> ON OFF TAKE_OFF LAND TURN MOVE FLY SET_SHIP SET_SPACE SHIP_ID
 
 %%
@@ -160,11 +160,11 @@ program:
     ;
 
 instruction_block: 
-    START LPAREN SHIP_ID RPAREN COLON {
-        strcpy(current_ship_id, $3);
-        free($3);
+    START_LPAREN SHIP_ID RPAREN_COLON {
+        strcpy(current_ship_id, $2);
+        free($2);
     }
-    BLOCK_CONTENT COLON END {
+    BLOCK_CONTENT COLON_END {
         flush_move_buffer(); // Ensure all moves are written out
         write_all_commands();
         fprintf(output_file, "\n\n");
