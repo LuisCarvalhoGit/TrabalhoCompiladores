@@ -19,9 +19,29 @@ extern int current_z;
 extern int current_direction;
 extern void calculate_position(int distance, double *delta_x, double *delta_y);
 
-void print_position(const char* instruction) {
-    printf("[%s] Current position: (%.2f, %.2f, %d) Direction: %d°\n", 
-           instruction, current_x, current_y, current_z, current_direction);
+void print_art(){
+    printf(" _______     _       _______     ______   ________  _____  _______      ___    \n");
+    printf("|_   __ \\   / \\     |_   __ \\  .' ____ \\ |_   __  ||_   _||_   __ \\   .'   `.  \n");
+    printf("  | |__) | / _ \\      | |__) | | (___ \\_|  | |_ \\_|  | |    | |__) | /  .-.  \\ \n");
+    printf("  |  ___/ / ___ \\     |  __ /   _.____`.   |  _| _   | |    |  __ /  | |   | | \n");
+    printf(" _| |_  _/ /   \\ \\_  _| |  \\ \\_| \\____) | _| |__/ | _| |_  _| |  \\ \\_\\  `-'  / \n");
+    printf("|_____||____| |____||____| |___|\\______.'|________||_____||____| |___|`.___.'  \n");
+    printf("                                                                               \n");
+}
+
+int print_initial_state() {
+    printf("\n----------------------------------------\n");
+    printf("[INITIAL STATE]\n");
+    printf("  Current Position: (%.2f, %.2f, %d)\n", current_x, current_y, current_z);
+    printf("  Current Direction: %d°\n", current_direction);
+    printf("----------------------------------------\n");
+}
+void print_state(const char* instruction) {
+    printf("\n----------------------------------------\n");
+    printf("[INSTRUCTION] %s\n", instruction);
+    printf("  Current Position: (%.2f, %.2f, %d)\n", current_x, current_y, current_z);
+    printf("  Current Direction: %d°\n", current_direction);
+    printf("----------------------------------------\n");
 }
 
 void yyerror(const char* s);
@@ -115,10 +135,8 @@ void write_all_commands() {
     // Write Set-Space if it exists, otherwise write default
     if (set_space_initialized) {
         fprintf(output_file, "%s\t", space_init_buffer);
-    } else {
-        fprintf(output_file, "initspace (0.00, 0.00, 0.00) (100.00, 100.00, 100.00)\t");
-    }
-    
+    } 
+
     // Write remaining commands
     fprintf(output_file, "%s", command_buffer);
 }
@@ -147,8 +165,9 @@ instruction_block:
         free($3);
     }
     BLOCK_CONTENT COLON END {
+        flush_move_buffer(); // Ensure all moves are written out
         write_all_commands();
-        fprintf(output_file, "--- End of instructions for ship %s ---\n\n", current_ship_id);
+        fprintf(output_file, "\n\n");
     }
     ;
 
@@ -157,7 +176,7 @@ BLOCK_CONTENT:
     ;
 
 instruction_sequence:
-    command_list
+    command_list 
     | init_sequence SEMICOLON command_list
     | init_sequence
     ;
@@ -199,7 +218,6 @@ command:
         } else {
             is_powered = 1;
             add_to_buffer("acao(ligar)  ");
-            print_position("ON");
         }
         free($1);
     }
@@ -212,7 +230,6 @@ command:
         } else {
             is_powered = 0;
             add_to_buffer("acao(desligar)  ");
-            print_position("OFF");
         }
     }
     | LAND {
@@ -223,7 +240,6 @@ command:
         } else {
             can_fly = 0;
             can_power_off = 1;
-            print_position("LAND");
         }
     }
     | TAKE_OFF {
@@ -234,7 +250,6 @@ command:
         } else {
             can_fly = 1;
             can_power_off = 0;
-            print_position("TAKE_OFF");
         }
     }
     | TURN {
@@ -253,7 +268,7 @@ command:
                 } else {
                     current_direction = (current_direction + degrees) % 360;
                 }
-                print_position("TURN");
+                print_state("TURN");
             }
         }
         free($1);
@@ -276,7 +291,7 @@ command:
                 move_count++;
                 current_x = new_x;
                 current_y = new_y;
-                print_position("MOVE");
+                print_state("MOVE");
             }
         } else {
             yyerror("Ship must be turned on to move");
@@ -298,7 +313,7 @@ command:
                 move_buffer[move_count].z = height;
                 move_count++;
                 current_z = new_z;
-                print_position("FLY");
+                print_state("FLY");
             }
         } else {
             yyerror("Take-Off necessary before flying");
@@ -311,7 +326,10 @@ command:
 %%
 
 void yyerror(const char* s) {
-    fprintf(stderr, "Error: %s\n", s);
+    fprintf(stderr, "----------------------------------------\n");
+    fprintf(stderr, "[ERROR] %s\n", s);
+    fprintf(stderr, "  At token: '%s'\n", yytext);
+    fprintf(stderr, "----------------------------------------\n");
 }
 
 int main() {
@@ -321,10 +339,16 @@ int main() {
         return 1;
     }
 
+    print_art();
+    
+    printf("========================================\n");
     printf("[PARSER] Starting spacecraft instruction parsing...\n");
+    printf("========================================\n");
     yyparse();
 
     fclose(output_file);
-    printf("[PARSER] Parsing complete. Check Alienship.txt for output.\n");
+    printf("\n[PARSER] Parsing complete.\n");
+    printf("[PARSER] Output written to 'Alienship.txt'.\n");
+    printf("========================================\n");
     return 0;
 }

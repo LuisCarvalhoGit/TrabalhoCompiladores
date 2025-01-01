@@ -15,10 +15,13 @@ START (Ai42) :
 START (AS543) :
 <Set-Ship--0--0--0--5--1>;
 <Turn--R--90>;
+<Move--50>;
+<Move--150>;
 <Move--50>
 : END
 
 START (EE123) :
+<Set-Space---50---50--50--50--50>;
 <On--EE123>;
 <Turn--R--90>;
 <Move--50>;

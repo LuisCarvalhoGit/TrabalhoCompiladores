@@ -89,7 +89,7 @@ void calculate_position(int distance, double *delta_x, double *delta_y) {
     return SET_SPACE;
 }
 
-[ \t\r]+            ; // Ignore whitespace
+[ \t\r\n]+            ; // Ignore whitespace
 .                   ; // Ignore random text
 
 %%

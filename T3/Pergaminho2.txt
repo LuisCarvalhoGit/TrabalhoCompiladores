@@ -1,4 +1,4 @@
-START (oi98) : /////(/(&(/&WE
+START (oi98) : //////:&/&WE
 <Set-Ship--0--10--0--0--1>dsfdfdsf;
 <Set-Space--0--0--50--50--50>;
 sdasasda%%&&/<Turn--R--90>;
