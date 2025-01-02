@@ -9,6 +9,7 @@ extern double init_x, init_y, init_z;
 extern int input_degrees;
 extern double min_x, min_y, min_z, max_x, max_y, max_z;
 extern int yylex();
+extern int yylineno;
 extern char* yytext;
 extern int is_powered;
 extern int can_fly;
@@ -20,13 +21,13 @@ extern int current_direction;
 extern void calculate_position(int distance, double *delta_x, double *delta_y);
 
 void print_art(){
-    printf(" _______     _       _______     ______   ________  _____  _______      ___    \n");
-    printf("|_   __ \\   / \\     |_   __ \\  .' ____ \\ |_   __  ||_   _||_   __ \\   .'   `.  \n");
-    printf("  | |__) | / _ \\      | |__) | | (___ \\_|  | |_ \\_|  | |    | |__) | /  .-.  \\ \n");
-    printf("  |  ___/ / ___ \\     |  __ /   _.____`.   |  _| _   | |    |  __ /  | |   | | \n");
-    printf(" _| |_  _/ /   \\ \\_  _| |  \\ \\_| \\____) | _| |__/ | _| |_  _| |  \\ \\_\\  `-'  / \n");
-    printf("|_____||____| |____||____| |___|\\______.'|________||_____||____| |___|`.___.'  \n");
-    printf("                                                                               \n");
+    printf("\t\t\t\t\t _______     _       _______     ______   ________  _____  _______      ___    \n");
+    printf("\t\t\t\t\t|_   __ \\   / \\     |_   __ \\  .' ____ \\ |_   __  ||_   _||_   __ \\   .'   `.  \n");
+    printf("\t\t\t\t\t  | |__) | / _ \\      | |__) | | (___ \\_|  | |_ \\_|  | |    | |__) | /  .-.  \\ \n");
+    printf("\t\t\t\t\t  |  ___/ / ___ \\     |  __ /   _.____`.   |  _| _   | |    |  __ /  | |   | | \n");
+    printf("\t\t\t\t\t _| |_  _/ /   \\ \\_  _| |  \\ \\_| \\____) | _| |__/ | _| |_  _| |  \\ \\_\\  `-'  / \n");
+    printf("\t\t\t\t\t|_____||____| |____||____| |___|\\______.'|________||_____||____| |___|`.___.'  \n");
+    printf("\t\t\t\t\t                                                                               \n");
 }
 
 int print_initial_state() {
@@ -142,6 +143,65 @@ void write_all_commands() {
     // Write remaining commands
     fprintf(output_file, "%s", command_buffer);
 }
+
+typedef struct {
+    char ship_id[100];
+    int has_errors;
+    char error_messages[1000];
+    int message_count;
+} ShipValidation;
+
+#define MAX_SHIPS 100
+ShipValidation validation_list[MAX_SHIPS];
+int ship_count = 0;
+
+void init_ship_validation(const char* ship_id) {
+    strcpy(validation_list[ship_count].ship_id, ship_id);
+    validation_list[ship_count].has_errors = 0;
+    validation_list[ship_count].error_messages[0] = '\0';
+    validation_list[ship_count].message_count = 0;
+    ship_count++;
+}
+
+void add_ship_error(const char* error_msg) {
+    if (ship_count > 0) {
+        ShipValidation* current = &validation_list[ship_count - 1];
+        current->has_errors = 1;
+        
+        // Add error message if there's space
+        if (current->message_count < 10) {  // Limit to 10 messages per ship
+            char temp[1000];
+            snprintf(temp, sizeof(temp), "%s\n", error_msg);
+            strcat(current->error_messages, temp);
+            current->message_count++;
+        }
+    }
+}
+
+void print_validation_report() {
+    printf("\n=== Validation Report ===\n");
+    for (int i = 0; i < ship_count; i++) {
+        ShipValidation* ship = &validation_list[i];
+        printf("\nShip %s: %s\n", 
+               ship->ship_id, 
+               ship->has_errors ? "INVALID" : "VALID");
+        
+        if (ship->has_errors) {
+            printf("Errors found:\n%s", ship->error_messages);
+        }
+    }
+    
+    // Overall summary
+    int total_valid = 0;
+    for (int i = 0; i < ship_count; i++) {
+        if (!validation_list[i].has_errors) total_valid++;
+    }
+    
+    printf("\nFinal Summary:\n");
+    printf("Total ships processed: %d\n", ship_count);
+    printf("Valid instruction sets: %d\n", total_valid);
+    printf("Invalid instruction sets: %d\n", ship_count - total_valid);
+}
 %}
 
 %union {
@@ -164,6 +224,7 @@ program:
 instruction_block: 
     START_LPAREN SHIP_ID RPAREN_COLON {
         strcpy(current_ship_id, $2);
+        init_ship_validation($2);
         free($2);
     }
     BLOCK_CONTENT COLON_END {
@@ -328,10 +389,10 @@ command:
 %%
 
 void yyerror(const char* s) {
-    fprintf(stderr, "----------------------------------------\n");
-    fprintf(stderr, "[ERROR] %s\n", s);
-    fprintf(stderr, "  At token: '%s'\n", yytext);
-    fprintf(stderr, "----------------------------------------\n");
+    char error_msg[200];
+    snprintf(error_msg, sizeof(error_msg), "Line %d: %s", yylineno, s);
+    fprintf(stderr, "%s\n", error_msg);
+    add_ship_error(error_msg);
 }
 
 int main() {
@@ -347,6 +408,7 @@ int main() {
     printf("[PARSER] Starting spacecraft instruction parsing...\n");
     printf("========================================\n");
     yyparse();
+    print_validation_report();
 
     fclose(output_file);
     printf("\n[PARSER] Parsing complete.\n");

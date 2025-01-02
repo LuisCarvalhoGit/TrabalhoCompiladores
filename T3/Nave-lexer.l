@@ -26,6 +26,7 @@ void calculate_position(int distance, double *delta_x, double *delta_y) {
 %}
 
 %option noyywrap
+%option yylineno
 
 %%
 
