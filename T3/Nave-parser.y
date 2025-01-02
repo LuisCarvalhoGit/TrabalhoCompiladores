@@ -36,6 +36,7 @@ int print_initial_state() {
     printf("  Current Direction: %d°\n", current_direction);
     printf("----------------------------------------\n");
 }
+
 void print_state(const char* instruction) {
     printf("\n----------------------------------------\n");
     printf("[INSTRUCTION] %s\n", instruction);
@@ -43,6 +44,7 @@ void print_state(const char* instruction) {
     printf("  Current Direction: %d°\n", current_direction);
     printf("----------------------------------------\n");
 }
+
 
 void yyerror(const char* s);
 

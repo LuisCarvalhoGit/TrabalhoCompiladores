@@ -12,12 +12,12 @@ eeefre<Take-Off>;
 : END
 
 START (AS543) :
-<Turn--R--90>;
-<Move--50>;
-<Set-Ship--0--0--0--5>
+<Set-Ship--0--0--0--5--1>;
+<Turn--R--90>
+<Move--50>
 : END
 
 START (EE123) :
 2323233232rrrr<Turn--R--90>;
-<Move--500>fghh;hh""
+<Move--500>fghhhh""
 : END
