@@ -13,7 +13,7 @@ all: ${TARGETS}
 
 # gerar o ficheiro Nave-parser.tab.c e Nave-parser.tab.h
 ${BISON_OUTPUT} ${BISON_HEADER}: ${BISON_INPUT}
-	${BISON} -d -Wcounterexamples ${BISON_INPUT}
+	${BISON} -d ${BISON_INPUT}
 
 # gerar o ficheiro lex.yy.c
 ${LEX_OUTPUT}: ${LEX_INPUT}
