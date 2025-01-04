@@ -31,19 +31,20 @@ void print_art(){
 }
 
 int print_initial_state() {
-    printf("\n----------------------------------------\n");
-    printf("[INITIAL STATE]\n");
-    printf("  Current Position: (%.2f, %.2f, %d)\n", current_x, current_y, current_z);
-    printf("  Current Direction: %d°\n", current_direction);
     printf("----------------------------------------\n");
+    printf("\n[INITIAL STATE]\n");
+    printf("  Current Position: (%.2f, %.2f, %.2f)\n", init_x, init_y, init_z);
+    printf("  Current Direction: %d°\n", current_direction);
+    printf("  Allowed Space: (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f)\n", min_x, min_y, min_z, max_x, max_y, max_z);
+    printf("\n----------------------------------------\n");
 }
 
 void print_state(const char* instruction) {
-    printf("\n----------------------------------------\n");
+    printf("----------------------------------------\n");
     printf("[INSTRUCTION] %s\n", instruction);
     printf("  Current Position: (%.2f, %.2f, %d)\n", current_x, current_y, current_z);
     printf("  Current Direction: %d°\n", current_direction);
-    printf("----------------------------------------\n");
+    printf("\n----------------------------------------\n");
 }
 
 
@@ -224,6 +225,9 @@ program:
 instruction_block: 
     START_LPAREN SHIP_ID RPAREN_COLON {
         strcpy(current_ship_id, $2);
+        printf("\n========================================\n");
+        printf("[SHIP PROCESSING] Executing instructions for ship %s\n", $2);
+        printf("========================================\n");
         init_ship_validation($2);
         free($2);
     }
@@ -231,6 +235,9 @@ instruction_block:
         flush_move_buffer(); // Ensure all moves are written out
         write_all_commands();
         fprintf(output_file, "\n\n");
+        printf("\n----------------------------------------\n");
+        printf("[SHIP PROCESSING] Finished executing instructions for ship %s\n", current_ship_id);
+        printf("----------------------------------------\n");
     }
     ;
 
@@ -239,9 +246,9 @@ BLOCK_CONTENT:
     ;
 
 instruction_sequence:
-    command_list 
-    | init_sequence SEMICOLON command_list
-    | init_sequence
+    { print_initial_state(); } command_list 
+    | init_sequence SEMICOLON { print_initial_state();} command_list
+    | init_sequence { print_initial_state();}
     ;
 
 init_sequence:
