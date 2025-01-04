@@ -69,8 +69,8 @@ void calculate_position(int distance, double *delta_x, double *delta_y) {
     return FLY; 
 }
 
-"<Set-Ship--"[0-9]+"--"[0-9]+"--"[0-9]+"--"(0|[1-9][0-9]?|[12][0-9]{2}|3[0-5][0-9])"--"[01]">" {
-    //         X         Y         Z                       DG                           ON   
+"<Set-Ship--"[-+]?[0-9]+"--"[-+]?[0-9]+"--"[0-9]+"--"(0|[1-9][0-9]?|[12][0-9]{2}|3[0-5][0-9])"--"[01]">" {
+    //         X                   Y         Z                       DG                           ON   
     sscanf(yytext, "<Set-Ship--%lf--%lf--%lf--%d--%d>", 
            &init_x, &init_y, &init_z, &input_degrees, &is_powered);
     current_direction += input_degrees;
