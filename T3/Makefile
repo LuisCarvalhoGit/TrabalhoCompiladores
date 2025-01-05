@@ -1,10 +1,10 @@
 CC=gcc
-BISON=bison 
+BISON=bison
 BISON_INPUT=Nave-parser.y
 BISON_OUTPUT=Nave-parser.tab.c
 BISON_HEADER=Nave-parser.tab.h
 LEX=flex
-LEX_OUTPUT=lex.yy.c 
+LEX_OUTPUT=lex.yy.c
 LEX_INPUT=Nave-lexer.l
 CFLAGS=-lm -ll -lfl
 TARGETS=${BISON_OUTPUT} ${LEX_OUTPUT} a.out
@@ -24,6 +24,6 @@ a.out: ${BISON_OUTPUT} ${LEX_OUTPUT}
 	${CC} ${BISON_OUTPUT} ${LEX_OUTPUT} ${CFLAGS} -o parser
 
 clean:
-	rm -f ${BISON_OUTPUT} ${LEX_OUTPUT} a.out ${BISON_HEADER} Alienship.txt
+	rm -f ${BISON_OUTPUT} ${LEX_OUTPUT} parser ${BISON_HEADER} Alienship.txt
 
 
