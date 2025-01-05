@@ -21,9 +21,9 @@ ${LEX_OUTPUT}: ${LEX_INPUT}
 
 # Compilar ficheiros .c
 a.out: ${BISON_OUTPUT} ${LEX_OUTPUT}
-	${CC} ${BISON_OUTPUT} ${LEX_OUTPUT} ${CFLAGS} -o a.out
+	${CC} ${BISON_OUTPUT} ${LEX_OUTPUT} ${CFLAGS} -o parser
 
 clean:
-	@rm -f ${BISON_OUTPUT} ${LEX_OUTPUT} a.out ${BISON_HEADER} Alienship.txt
+	rm -f ${BISON_OUTPUT} ${LEX_OUTPUT} a.out ${BISON_HEADER} Alienship.txt
 
 
