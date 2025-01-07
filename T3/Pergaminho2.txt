@@ -13,7 +13,7 @@ eeefre<Take-Off>;
 
 START (AS543) :
 <Set-Ship--0--0--0--5--1>;
-<Turn--R--90>
+<Turn--R--90>;
 <Move--50>
 : END
 
